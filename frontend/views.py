@@ -24,8 +24,9 @@ class DB:
         return words
 
 def _process_absent_letters(words, absent_letters):
-    if not wrong_position_letters:
+    if not absent_letters:
         return words
+
     result = words
     for letter in absent_letters:
         current_words = []
@@ -36,9 +37,9 @@ def _process_absent_letters(words, absent_letters):
     return result
 
 def _process_wrong_position_letters(words, wrong_position_letters):
-
     if not wrong_position_letters:
         return words
+
     result = words
     for i in range(0, len(wrong_position_letters), 2):
         current_words = []
@@ -46,13 +47,13 @@ def _process_wrong_position_letters(words, wrong_position_letters):
         index = int(wrong_position_letters[i+1]) - 1
         for word in result:
             if word[index] != letter:
-                result.append(word)
+                current_words.append(word)
         result = current_words
 
     return result
 
 def _process_correct_position_letters(words, correct_position_letters):
-    if not wrong_position_letters:
+    if not correct_position_letters:
         return words
 
     result = words
@@ -62,7 +63,7 @@ def _process_correct_position_letters(words, correct_position_letters):
         index = int(correct_position_letters[i+1]) - 1
         for word in result:
             if word[index] == letter:
-                result.append(word)
+                current_words.append(word)
         result = current_words
 
     return result
@@ -70,6 +71,18 @@ def _process_correct_position_letters(words, correct_position_letters):
 
 def _process_letter_counts(words, correct_position_letters, wrong_position_letters):
     result = words
+    freq_dict = {}
+
+    for char in correct_position_letters + wrong_position_letters:
+        if char.isalpha():
+            freq_dict[char] = freq_dict.get(char, 0) + 1
+
+    for char, count in freq_dict.items():
+        current_words = []
+        for word in result:
+            if word.count(char) == count:
+                current_words.append(word)
+        result = current_words
 
     return result
 
