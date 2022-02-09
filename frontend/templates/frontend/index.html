@@ -1,0 +1,138 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet">
+    <script src="{% static 'jquery-3.6.0.min.js' %}"></script>
+
+    <title>Wordle Guesser</title>
+  </head>
+  <body>
+    <div class="container">
+        <h1>Wordle Guesser</h1>
+        <div class="row">
+            <div class="col col-3">
+                <p>How many words are in your wordle?</p>
+            </div>
+
+            <div class="col">
+                <div class="container" id="btns">
+                    <button class="btn btn-success word-length-btn">5</button>
+                    <button class="btn btn-light word-length-btn">6</button>
+                    <button class="btn btn-light word-length-btn">7</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="guesses">
+        </div>
+
+        <div class="container col" id="guess-form">
+            <div class="row" style="margin: 10px 10px;">
+                <label>Absent letters:
+                    <input type="text" id="absent-letters" class="info">
+                    <span class="text text-muted">Example: ASDF</span>
+                </label>
+            </div>
+            <div class="row" style="margin: 10px 10px;">
+                <label>Wrong location:
+                    <input type="text" id="wrong-location" class="info">
+                    <span class="text text-muted">Example: A1S3</span>
+                </label>
+            </div>
+            <div class="row" style="margin: 10px 10px;">
+                <label>Correct location:
+                    <input type="text" id="correct-location" class="info">
+                    <span class="text text-muted">Example: R2E4</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Guesses</h2>
+            <div class="container" id="words">
+            </div>
+        </div>
+    <div>
+    <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            let numLetters = 5;
+
+            const toggleNumWords = (activeButton) => {
+                const wordLengthBtns = document.getElementsByClassName("word-length-btn");
+                Array.prototype.map.call(wordLengthBtns, (btn) => {
+                    btn.classList.replace("btn-success", "btn-light");
+                    if (btn === activeButton) {
+                        btn.classList.replace("btn-light", "btn-success");
+                        numLetters = parseInt(btn.textContent);
+                    }
+                });
+            }
+
+            const wordLengthBtns = document.getElementsByClassName("word-length-btn");
+            Array.prototype.map.call(wordLengthBtns, (btn) => {
+                btn.addEventListener("click", function() {
+                    toggleNumWords(btn);
+                    getGuesses(getGuessParams());
+                })
+            })
+
+            function getGuessParams() {
+                let guessParams = {
+                    length: 0,
+                    excludedLetters: '',
+                    correctPosLetters: '',
+                    wrongPosLetters: ''
+                };
+                guessParams.length = numLetters;
+                guessParams.excludedLetters = document.querySelector('#absent-letters').value
+                guessParams.correctPosLetters = document.querySelector('#correct-location').value
+                guessParams.wrongPosLetters = document.querySelector('#wrong-location').value
+                return guessParams;
+            }
+
+            function displayWords(wordList) {
+                if (wordList.length === 0) {
+                    return;
+                }
+                var wordsElt = document.createElement("ol");
+                for (var word of wordList) {
+                    var wordElt = document.createElement("li");
+                    wordElt.textContent = word;
+                    wordsElt.appendChild(wordElt);
+                }
+                var wordsContainer = document.querySelector("#words");
+                wordsContainer.innerHTML = "";
+                wordsContainer.appendChild(wordsElt);
+            }
+
+            async function getGuesses(params) {
+                const response = await fetch('/get_guesses/', {
+                    method: 'POST', // or 'PUT'
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params),
+                }).then(res => res.json())
+                  .then(res_json => displayWords(res_json.words));
+            };
+
+
+            const guessInputs = document.querySelectorAll(".info");
+            Array.prototype.map.call(guessInputs, (btn) => {
+                btn.addEventListener('change', function() {
+                    btn.value = btn.value.toUpperCase();
+                    getGuesses(getGuessParams());
+                })
+            });
+
+         });
+    </script>
+  </body>
+</html>
+
