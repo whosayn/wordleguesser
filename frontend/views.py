@@ -80,7 +80,7 @@ def _process_letter_counts(words, correct_position_letters, wrong_position_lette
     for char, count in freq_dict.items():
         current_words = []
         for word in result:
-            if word.count(char) == count:
+            if word.count(char) >= count:
                 current_words.append(word)
         result = current_words
 
